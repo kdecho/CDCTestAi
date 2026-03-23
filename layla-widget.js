@@ -279,7 +279,23 @@
     bubble.id = 'lc-bubble';
     bubble.href = '#';
     bubble.setAttribute('aria-label', 'Open Layla assistant');
-    bubble.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
+    bubble.innerHTML = `<svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#fff;pointer-events:none;display:block;"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
+    // Force inline styles — same pattern as the WhatsApp button on this page
+    const bs = bubble.style;
+    bs.setProperty('position',        'fixed',        'important');
+    bs.setProperty('bottom',          '90px',         'important');
+    bs.setProperty('left',            '24px',         'important');
+    bs.setProperty('z-index',         '99999',        'important');
+    bs.setProperty('width',           '60px',         'important');
+    bs.setProperty('height',          '60px',         'important');
+    bs.setProperty('border-radius',   '50%',          'important');
+    bs.setProperty('background',      '#0d9488',      'important');
+    bs.setProperty('display',         'flex',         'important');
+    bs.setProperty('align-items',     'center',       'important');
+    bs.setProperty('justify-content', 'center',       'important');
+    bs.setProperty('cursor',          'pointer',      'important');
+    bs.setProperty('text-decoration', 'none',         'important');
+    bs.setProperty('box-shadow',      '0 8px 32px rgba(13,148,136,.25),0 2px 8px rgba(0,0,0,.12)', 'important');
 
     const panel = document.createElement('div');
     panel.id = 'lc-panel';
