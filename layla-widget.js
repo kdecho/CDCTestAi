@@ -841,10 +841,22 @@
     initEvents();
   }
 
+  function guardBubble() {
+    // If anything removes our elements from the DOM, put them back immediately
+    const observer = new MutationObserver(() => {
+      if (!document.getElementById('lc-bubble')) {
+        buildHTML();
+        initEvents();
+      }
+    });
+    observer.observe(document.body, { childList: true });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => { init(); guardBubble(); });
   } else {
     init();
+    guardBubble();
   }
 
 })();
