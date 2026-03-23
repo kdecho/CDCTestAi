@@ -134,11 +134,11 @@ async function handleSTT(request, env) {
 }
 
 // ── /api/email ─────────────────────────────────────────────────────────────────
-async function handleEmail(request) {
+async function handleEmail(request, env) {
   try {
     const { appointmentData: d } = await request.json();
     const now = new Date().toISOString();
-    const body = `New appointment request received via Cedars Dental Centre virtual assistant (Layla).
+    const textContent = `New appointment request received via Cedars Dental Centre virtual assistant (Layla).
 
 --- PATIENT DETAILS ---
 Full Name:              ${d.fullName || 'Not provided'}
@@ -157,17 +157,26 @@ Please follow up with the patient to confirm their appointment.
 
 Cedars Dental Centre — info@cedarsdentalcentre.com — +961 70 533 831`;
 
-    const resp = await fetch('https://api.mailchannels.net/tx/v1/send', {
+    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'accept': 'application/json',
+        'api-key': env.BREVO_API_KEY,
+        'content-type': 'application/json',
+      },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: 'info@cedarsdentalcentre.com', name: 'Cedars Dental Centre' }] }],
-        from: { email: 'info@cedarsdentalcentre.com', name: 'Layla - Virtual Receptionist' },
+        sender: { name: 'Layla - Virtual Receptionist', email: 'info@cedarsdentalcentre.com' },
+        to: [{ email: 'info@cedarsdentalcentre.com', name: 'Cedars Dental Centre' }],
         subject: `New Appointment Request — ${d.fullName || 'Unknown'}`,
-        content: [{ type: 'text/plain', value: body }],
+        textContent,
       }),
     });
-    return json({ success: resp.ok });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      return json({ success: false, error: err }, 500);
+    }
+    return json({ success: true });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
@@ -183,7 +192,7 @@ export default {
 
     if (pathname === '/api/chat' && method === 'POST') return handleChat(request, env);
     if (pathname === '/api/stt'  && method === 'POST') return handleSTT(request, env);
-    if (pathname === '/api/email' && method === 'POST') return handleEmail(request);
+    if (pathname === '/api/email' && method === 'POST') return handleEmail(request, env);
 
     // Serve static assets for everything else
     return env.ASSETS.fetch(request);
