@@ -5,6 +5,7 @@
 
   // ─── State ────────────────────────────────────────────────────────────────────
   let messages     = [];
+  let sessionLang  = 'en';      // tracks detected language for the whole session
   let mode         = null;      // null | 'chat' | 'voice'
   let isOpen       = false;
   let isLoading    = false;
@@ -425,7 +426,7 @@
     const r = await fetch(API.chat, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: msgs }),
+      body: JSON.stringify({ messages: msgs, language: sessionLang }),
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
@@ -479,6 +480,8 @@
   }
 
   async function chatSend(text) {
+    const detected = detectLang(text);
+    if (detected !== 'en') sessionLang = detected;
     messages.push({ role: 'user', content: text });
     addMsg('user', text);
     setChatBusy(true);
@@ -775,6 +778,8 @@
         return;
       }
 
+      const detected = detectLang(userText.trim());
+      if (detected !== 'en') sessionLang = detected;
       vtAppend('You', userText.trim());
       messages.push({ role: 'user', content: userText.trim() });
 
@@ -821,8 +826,9 @@
     audioChunks  = [];
     setVoiceUI('idle');
     if (resetMode !== false) {
-      mode     = null;
-      messages = [];
+      mode        = null;
+      messages    = [];
+      sessionLang = 'en';
     }
   }
 

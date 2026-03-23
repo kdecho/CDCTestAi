@@ -44,6 +44,7 @@ Step 4 - CONFIRMATION SUMMARY: Read back all collected information and ask to co
 Step 5 - CLOSING: Thank the patient, tell them the team will contact them shortly.
 
 IMPORTANT RULES:
+- Never output internal thoughts, notes, or meta-commentary like "Note:", "I'll wait", "I'm thinking", etc. Only speak directly to the patient.
 - Never ask more than one question per turn
 - Always confirm phone number by repeating it back digit by digit
 - Always match the caller's language — Arabic, French, or English
@@ -70,11 +71,20 @@ function json(data, status = 200) {
 }
 
 // ── /api/chat ──────────────────────────────────────────────────────────────────
+const LANG_NAMES = { ar: 'Arabic', fr: 'French', en: 'English' };
+
 async function handleChat(request, env) {
   try {
-    const { messages = [] } = await request.json();
+    const { messages = [], language = 'en' } = await request.json();
+
+    // Reinforce language on every single request so the model never drifts
+    const langName = LANG_NAMES[language] || 'English';
+    const langRule = language !== 'en'
+      ? `\n\nMANDATORY LANGUAGE RULE: The user is communicating in ${langName}. Every word of your response MUST be in ${langName}. Absolutely no English unless the user switches to English first.`
+      : '';
+
     const result = await env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+      messages: [{ role: 'system', content: SYSTEM_PROMPT + langRule }, ...messages],
       max_tokens: 300,
       temperature: 0.7,
     });
