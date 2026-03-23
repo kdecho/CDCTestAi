@@ -9,7 +9,9 @@
       "Bash(echo \"=== $f.html - <title> ===\")",
       "Read(//Users/eli/Downloads/CDCTestAi/**)",
       "Bash(done)",
-      "Bash(do echo:*)"
+      "Bash(do echo:*)",
+      "Bash(python3 -:*)",
+      "Bash(python3 -c \":*)"
     ]
   }
 }
