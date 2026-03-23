@@ -264,10 +264,53 @@
       }
       #lc-end:hover { background:#fecaca;transform:scale(1.03); }
 
-      /* mobile */
-      @media(max-width:480px){
-        #lc-panel{left:0!important;right:0!important;bottom:0!important;width:100vw!important;height:90vh!important;border-radius:20px 20px 0 0!important;}
-        #lc-bubble{bottom:80px;left:16px;}
+      /* ── Tablet (≤768px) ── */
+      @media(max-width:768px){
+        #lc-panel{
+          width:340px;
+        }
+      }
+
+      /* ── Mobile (≤540px) ── */
+      @media(max-width:540px){
+        #lc-panel{
+          position:fixed !important;
+          left:0 !important;
+          right:0 !important;
+          bottom:0 !important;
+          top:auto !important;
+          width:100% !important;
+          max-width:100% !important;
+          height:92dvh !important;
+          height:92vh !important;
+          border-radius:20px 20px 0 0 !important;
+          transform:translateY(100%) !important;
+          transition:transform .32s cubic-bezier(.32,1,.32,1) !important;
+          padding-bottom:env(safe-area-inset-bottom,0px);
+        }
+        #lc-panel.show{
+          transform:translateY(0) !important;
+          opacity:1 !important;
+        }
+        #lc-panel.open{
+          display:flex !important;
+        }
+        /* larger touch targets */
+        #lc-close{ width:38px !important;height:38px !important;font-size:20px !important; }
+        #lc-send { width:44px !important;height:44px !important; }
+        #lc-send svg { width:20px !important;height:20px !important; }
+        #lc-ta   { font-size:16px !important; /* prevents iOS zoom on focus */ }
+        #lc-input{ padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px)) 12px !important; }
+        /* mode buttons */
+        .lc-mode-btn { padding:16px 8px !important; }
+        .lc-mode-icon{ width:46px !important;height:46px !important;font-size:22px !important; }
+        /* voice screen */
+        #lc-orb { width:100px !important;height:100px !important; }
+        #lc-orb svg { width:42px !important;height:42px !important; }
+        #lc-end { padding:14px 40px !important;font-size:15px !important; }
+        #lc-vt  { max-height:90px !important;font-size:12px !important; }
+        /* messages */
+        .lc-txt { font-size:15px !important; }
       }
     `;
     document.head.appendChild(el);
@@ -839,6 +882,23 @@
     initEvents();
   }
 
+  // CSS can't override inline setProperty('important'), so we use JS for responsive bubble
+  function applyResponsive() {
+    const bubble = document.getElementById('lc-bubble');
+    const panel  = document.getElementById('lc-panel');
+    if (!bubble) return;
+    const mobile = window.innerWidth <= 540;
+    const bs = bubble.style;
+    bs.setProperty('bottom', mobile ? '20px'  : '90px',  'important');
+    bs.setProperty('left',   mobile ? '16px'  : '24px',  'important');
+    bs.setProperty('width',  mobile ? '52px'  : '60px',  'important');
+    bs.setProperty('height', mobile ? '52px'  : '60px',  'important');
+    // On mobile, panel is positioned by CSS; on desktop, keep JS positioning
+    if (panel && !mobile) {
+      panel.style.removeProperty('top');
+    }
+  }
+
   function guardBubble() {
     // If anything removes our elements from the DOM, put them back immediately
     const observer = new MutationObserver(() => {
@@ -851,10 +911,13 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { init(); guardBubble(); });
+    document.addEventListener('DOMContentLoaded', () => { init(); guardBubble(); applyResponsive(); });
   } else {
     init();
     guardBubble();
+    applyResponsive();
   }
+
+  window.addEventListener('resize', applyResponsive);
 
 })();
