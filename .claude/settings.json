@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -o 'fa-whatsapp.\\\\{0,200\\\\}' /Users/eli/Downloads/CDCTestAi/index.html)",
+      "Bash(grep -o '© 2017-.\\\\{0,30\\\\}' /Users/eli/Downloads/CDCTestAi/index.html)",
+      "Bash(python3 scripts/seo_improvements.py)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(echo \"=== $f.html - <title> ===\")",
+      "Read(//Users/eli/Downloads/CDCTestAi/**)",
+      "Bash(done)",
+      "Bash(do echo:*)"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://cedarsdentalcentre.com/sitemap.xml
