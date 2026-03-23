@@ -156,7 +156,7 @@ Cedars Dental Centre — info@cedarsdentalcentre.com — +961 70 533 831`;
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        sender: { name: 'Layla - Virtual Receptionist', email: 'cedarsdentalcenterlebanon@gmail.com' },
+        sender: { name: 'Layla - Virtual Receptionist', email: 'layla-ai@cedarsdentalcenter.com' },
         to: [{ email: 'info@cedarsdentalcentre.com', name: 'Cedars Dental Centre' }],
         subject: `New Appointment Request — ${d.fullName || 'Unknown'}`,
         textContent,
