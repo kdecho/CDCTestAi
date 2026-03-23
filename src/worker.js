@@ -70,6 +70,29 @@ function json(data, status = 200) {
   return Response.json(data, { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
 }
 
+// ── Strip model artefacts from response ────────────────────────────────────────
+function cleanResponse(text) {
+  if (!text) return text;
+  return text
+    .split('\n')
+    .filter(line => {
+      const t = line.trim();
+      if (!t) return true; // keep blank lines (paragraph breaks)
+      // Drop lines that are internal model meta-commentary
+      if (/^note\s*:/i.test(t)) return false;
+      if (/^annexed\s/i.test(t)) return false;
+      if (/^i('ll| will) wait/i.test(t)) return false;
+      if (/^waiting for/i.test(t)) return false;
+      if (/^\(note:/i.test(t)) return false;
+      if (/^\[note:/i.test(t)) return false;
+      if (/^assistant\s*:/i.test(t)) return false;
+      if (/^layla\s*:/i.test(t)) return false;
+      return true;
+    })
+    .join('\n')
+    .trim();
+}
+
 // ── /api/chat ──────────────────────────────────────────────────────────────────
 const LANG_NAMES = { ar: 'Arabic', fr: 'French', en: 'English' };
 
@@ -88,7 +111,7 @@ async function handleChat(request, env) {
       max_tokens: 300,
       temperature: 0.7,
     });
-    return json({ response: result.response });
+    return json({ response: cleanResponse(result.response) });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
