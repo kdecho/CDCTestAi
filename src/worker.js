@@ -75,9 +75,9 @@ function json(data, status = 200) {
 async function handleChat(request, env) {
   try {
     const { messages = [] } = await request.json();
-    const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+    const result = await env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-      max_tokens: 800,
+      max_tokens: 300,
       temperature: 0.7,
     });
     return json({ response: result.response });
