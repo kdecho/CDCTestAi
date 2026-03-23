@@ -450,7 +450,7 @@
       await fetch(API.email, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appointmentData: data }),
+        body: JSON.stringify({ appointmentData: data, transcript: messages }),
       });
     } catch (e) { console.error('[Layla] email:', e); }
   }

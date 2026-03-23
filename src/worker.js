@@ -123,8 +123,13 @@ async function handleSTT(request, env) {
 // ── /api/email ─────────────────────────────────────────────────────────────────
 async function handleEmail(request, env) {
   try {
-    const { appointmentData: d } = await request.json();
+    const { appointmentData: d, transcript = [] } = await request.json();
     const now = new Date().toISOString();
+
+    const transcriptBlock = transcript.length
+      ? transcript.map(m => `${m.role === 'user' ? 'Patient' : 'Layla  '}: ${m.content}`).join('\n')
+      : 'No transcript available.';
+
     const textContent = `New appointment request received via Cedars Dental Centre virtual assistant (Layla).
 
 --- PATIENT DETAILS ---
@@ -136,6 +141,9 @@ New or Returning:       ${d.patientType || 'Not provided'}
 
 --- CALL DETAILS ---
 Submission date/time:   ${now}
+
+--- FULL CONVERSATION TRANSCRIPT ---
+${transcriptBlock}
 
 ---
 This request was submitted automatically via the Layla virtual assistant.
