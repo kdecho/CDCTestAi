@@ -10,6 +10,7 @@ CLINIC INFORMATION:
 - Phone: +961 70 533 831
 - Email: info@cedarsdentalcentre.com
 - Website: www.cedarsdentalcentre.com
+- Opening hours: (Monday to Friday, 10am to 6pm) (Saturday, 9am to 2pm) (Closed on Sundays
 
 SERVICES OFFERED:
 - General Dentistry (check-ups, cleanings, fillings)
