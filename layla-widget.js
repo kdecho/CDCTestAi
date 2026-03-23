@@ -5,7 +5,6 @@
 
   // ─── State ────────────────────────────────────────────────────────────────────
   let messages     = [];
-  let sessionLang  = 'en';      // tracks detected language for the whole session
   let mode         = null;      // null | 'chat' | 'voice'
   let isOpen       = false;
   let isLoading    = false;
@@ -426,7 +425,7 @@
     const r = await fetch(API.chat, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: msgs, language: sessionLang }),
+      body: JSON.stringify({ messages: msgs }),
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
@@ -480,8 +479,6 @@
   }
 
   async function chatSend(text) {
-    const detected = detectLang(text);
-    if (detected !== 'en') sessionLang = detected;
     messages.push({ role: 'user', content: text });
     addMsg('user', text);
     setChatBusy(true);
@@ -503,10 +500,8 @@
 
   function addMsg(role, text) {
     const box = document.getElementById('lc-msgs');
-    const lang = detectLang(text);
     const row = document.createElement('div');
     row.className = `lc-row ${role}`;
-    if (lang === 'ar') row.setAttribute('dir', 'rtl');
     row.innerHTML = `<div class="lc-ico">${role === 'bot' ? '🦷' : '👤'}</div><div class="lc-txt">${esc(text)}</div>`;
     box.appendChild(row);
     box.scrollTop = box.scrollHeight;
@@ -612,17 +607,14 @@
       return;
     }
 
-    const lang = detectLang(text);
-    const langCode = { ar: 'ar-LB', fr: 'fr-FR', en: 'en-US' }[lang] || 'en-US';
     const utt = new SpeechSynthesisUtterance(text);
-    utt.lang  = langCode;
+    utt.lang  = 'en-US';
     utt.rate  = 0.92;
     utt.pitch = 1.05;
 
     const voices = window.speechSynthesis.getVoices();
-    const lk     = langCode.split('-')[0];
-    const best   = voices.find(v => v.lang.startsWith(lk) && /female|woman|féminin/i.test(v.name))
-                || voices.find(v => v.lang.startsWith(lk));
+    const best   = voices.find(v => v.lang.startsWith('en') && /female|woman/i.test(v.name))
+                || voices.find(v => v.lang.startsWith('en'));
     if (best) utt.voice = best;
 
     utt.onend = () => {
@@ -778,8 +770,6 @@
         return;
       }
 
-      const detected = detectLang(userText.trim());
-      if (detected !== 'en') sessionLang = detected;
       vtAppend('You', userText.trim());
       messages.push({ role: 'user', content: userText.trim() });
 
@@ -826,9 +816,8 @@
     audioChunks  = [];
     setVoiceUI('idle');
     if (resetMode !== false) {
-      mode        = null;
-      messages    = [];
-      sessionLang = 'en';
+      mode     = null;
+      messages = [];
     }
   }
 

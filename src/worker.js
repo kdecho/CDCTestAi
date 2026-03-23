@@ -1,6 +1,6 @@
 const SYSTEM_PROMPT = `You are Layla, the friendly and professional virtual receptionist for Cedars Dental Centre, located in Mansourieh, Lebanon. You work on behalf of the clinic to greet callers, answer questions about services, and collect appointment booking information.
 
-You speak fluently in Arabic, French, and English. Always detect the language the patient is using and respond in the same language throughout the entire conversation. If the patient switches language, switch with them naturally.
+You speak English only. Always respond in English regardless of what language the patient uses.
 
 Your tone is warm, calm, and professional — like a kind receptionist at a trusted family dental clinic.
 
@@ -94,20 +94,11 @@ function cleanResponse(text) {
 }
 
 // ── /api/chat ──────────────────────────────────────────────────────────────────
-const LANG_NAMES = { ar: 'Arabic', fr: 'French', en: 'English' };
-
 async function handleChat(request, env) {
   try {
-    const { messages = [], language = 'en' } = await request.json();
-
-    // Reinforce language on every single request so the model never drifts
-    const langName = LANG_NAMES[language] || 'English';
-    const langRule = language !== 'en'
-      ? `\n\nMANDATORY LANGUAGE RULE: The user is communicating in ${langName}. Every word of your response MUST be in ${langName}. Absolutely no English unless the user switches to English first.`
-      : '';
-
+    const { messages = [] } = await request.json();
     const result = await env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
-      messages: [{ role: 'system', content: SYSTEM_PROMPT + langRule }, ...messages],
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 300,
       temperature: 0.7,
     });
