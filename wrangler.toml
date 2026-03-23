@@ -1,6 +1,11 @@
 name = "cedars-dental"
 compatibility_date = "2024-09-23"
-pages_build_output_dir = "."
+main = "src/worker.js"
+
+[assets]
+directory = "."
+binding = "ASSETS"
+exclude = ["src", "functions", "scripts/seo_improvements.py", "CDC-main.zip"]
 
 [ai]
 binding = "AI"
