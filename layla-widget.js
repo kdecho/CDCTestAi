@@ -493,6 +493,8 @@
       addMsg('bot', 'Sorry, connection issue. Please try again or call +961 70 533 831.');
     } finally {
       setChatBusy(false);
+      const ta = document.getElementById('lc-ta');
+      if (ta) ta.focus();
     }
   }
 
