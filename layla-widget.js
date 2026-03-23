@@ -41,16 +41,19 @@
 
       /* Bubble */
       #lc-bubble {
-        position:fixed;bottom:90px;left:24px;z-index:9998;
-        width:60px;height:60px;border-radius:50%;
-        background:var(--lc-teal);border:none;outline:none;cursor:pointer;
-        display:flex;align-items:center;justify-content:center;
-        box-shadow:var(--lc-shadow);user-select:none;
+        position:fixed !important;bottom:90px !important;left:24px !important;
+        z-index:99999 !important;
+        width:60px !important;height:60px !important;border-radius:50% !important;
+        background:var(--lc-teal) !important;border:none !important;outline:none !important;
+        cursor:pointer !important;
+        display:flex !important;align-items:center !important;justify-content:center !important;
+        box-shadow:var(--lc-shadow) !important;user-select:none !important;
         transition:transform .2s,box-shadow .2s;
+        text-decoration:none !important;
       }
-      #lc-bubble:hover  { transform:scale(1.08); }
-      #lc-bubble:active { transform:scale(.95); }
-      #lc-bubble svg    { width:28px;height:28px;fill:#fff;pointer-events:none; }
+      #lc-bubble:hover  { transform:scale(1.08) !important; }
+      #lc-bubble:active { transform:scale(.95) !important; }
+      #lc-bubble svg    { width:28px !important;height:28px !important;fill:#fff !important;pointer-events:none; }
 
       /* Panel */
       #lc-panel {
@@ -272,8 +275,9 @@
 
   // ─── HTML ─────────────────────────────────────────────────────────────────────
   function buildHTML() {
-    const bubble = document.createElement('button');
+    const bubble = document.createElement('a');
     bubble.id = 'lc-bubble';
+    bubble.href = '#';
     bubble.setAttribute('aria-label', 'Open Layla assistant');
     bubble.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
 
@@ -343,7 +347,7 @@
   // ─── Events ───────────────────────────────────────────────────────────────────
   function initEvents() {
     // Panel open/close
-    document.getElementById('lc-bubble').addEventListener('click', togglePanel);
+    document.getElementById('lc-bubble').addEventListener('click', e => { e.preventDefault(); togglePanel(); });
     document.getElementById('lc-close').addEventListener('click', closePanel);
 
     // Mode selection
