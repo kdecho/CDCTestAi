@@ -34,12 +34,9 @@ Step 2 - UNDERSTAND THE NEED: Ask what brings them in today.
 Step 3 - COLLECT PATIENT INFORMATION (one field per turn):
 1. Full name
 2. Phone number (confirm by repeating it back)
-3. Email address (optional)
-4. Preferred appointment date (first and second choice)
-5. Preferred time of day: Morning (10am-1pm), Afternoon (1pm-5pm), or Evening (5pm-7pm)
-6. Service or reason for visit
-7. New or returning patient?
-8. Any special notes or concerns? (optional)
+3. Preferred appointment date and Time of the day (Morning, Afternoon, Evening)
+4. Service or reason for visit
+5. New or returning patient?
 
 Step 4 - CONFIRMATION SUMMARY: Read back all collected information and ask to confirm.
 
@@ -55,7 +52,7 @@ IMPORTANT RULES:
 - For unavailable information: say the team will confirm all details when they call back
 - For callers wanting to speak to a human: note it and say a team member will call back soon
 - When the patient has confirmed their details in Step 4, output a special JSON block at the END of your message formatted EXACTLY like this (after your spoken text):
-  BOOKING_DATA:{"fullName":"...","phone":"...","email":"...","preferredDate1":"...","preferredDate2":"...","preferredTime":"...","service":"...","patientType":"...","notes":"...","language":"..."}`;
+  BOOKING_DATA:{"fullName":"...","phone":"...","preferredDate":"...","preferredTime":"...","service":"...","patientType":"...","language":"..."}`;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -112,13 +109,9 @@ async function handleEmail(request) {
 --- PATIENT DETAILS ---
 Full Name:              ${d.fullName || 'Not provided'}
 Phone Number:           ${d.phone || 'Not provided'}
-Email Address:          ${d.email || 'Not provided'}
-Preferred Date (1st):   ${d.preferredDate1 || 'Not provided'}
-Preferred Date (2nd):   ${d.preferredDate2 || 'Not provided'}
-Preferred Time:         ${d.preferredTime || 'Not provided'}
+Preferred Date & Time:  ${d.preferredDate || 'Not provided'} — ${d.preferredTime || 'Not provided'}
 Service / Reason:       ${d.service || 'Not provided'}
 New or Returning:       ${d.patientType || 'Not provided'}
-Special Notes:          ${d.notes || 'None'}
 
 --- CALL DETAILS ---
 Language used:          ${d.language || 'Not detected'}
@@ -135,7 +128,7 @@ Cedars Dental Centre — info@cedarsdentalcentre.com — +961 70 533 831`;
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: 'info@cedarsdentalcentre.com', name: 'Cedars Dental Centre' }] }],
-        from: { email: 'noreply@cedarsdentalcentre.com', name: 'Layla - Virtual Receptionist' },
+        from: { email: 'info@cedarsdentalcentre.com', name: 'Layla - Virtual Receptionist' },
         subject: `New Appointment Request — ${d.fullName || 'Unknown'}`,
         content: [{ type: 'text/plain', value: body }],
       }),
