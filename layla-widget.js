@@ -445,12 +445,12 @@
     return { text: display, booking };
   }
 
-  async function sendEmail(data) {
+  async function sendEmail(data, transcript) {
     try {
       await fetch(API.email, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appointmentData: data, transcript: messages }),
+        body: JSON.stringify({ appointmentData: data, transcript }),
       });
     } catch (e) { console.error('[Layla] email:', e); }
   }
@@ -487,7 +487,7 @@
       const { text: reply, booking } = await callAI(messages);
       hideTyping();
       if (reply) { messages.push({ role: 'assistant', content: reply }); addMsg('bot', reply); }
-      if (booking) onBooking(booking);
+      if (booking) onBooking(booking, messages.slice());
     } catch (_) {
       hideTyping();
       addMsg('bot', 'Sorry, connection issue. Please try again or call +961 70 533 831.');
@@ -530,7 +530,7 @@
     if (t) t.disabled = v;
   }
 
-  function onBooking(data) {
+  function onBooking(data, snapshot) {
     if (mode === 'chat') {
       const box = document.getElementById('lc-msgs');
       const b = document.createElement('div');
@@ -539,7 +539,7 @@
       box.appendChild(b);
       box.scrollTop = box.scrollHeight;
     }
-    sendEmail(data);
+    sendEmail(data, snapshot);
   }
 
   // ─── VOICE ────────────────────────────────────────────────────────────────────
@@ -560,7 +560,7 @@
           vtAppend('Layla', text);
           laylaSpeak(text);
         }
-        if (booking) { sendEmail(booking); }
+        if (booking) { onBooking(booking, messages.slice()); }
       })
       .catch(() => laylaSpeak("Hello! I had a connection issue. Please try again."));
   }
@@ -776,14 +776,17 @@
       // 2. AI response
       const { text: reply, booking } = await callAI(messages);
 
-      if (booking) {
-        onBooking(booking);
-        sendEmail(booking);
-      }
-
+      // Push reply first so transcript includes the full conversation
       if (reply) {
         messages.push({ role: 'assistant', content: reply });
         vtAppend('Layla', reply);
+      }
+
+      if (booking) {
+        onBooking(booking, messages.slice());
+      }
+
+      if (reply) {
         // After booking confirmation, speak then go idle (don't re-listen forever)
         if (booking) {
           laylaSpeak(reply);
