@@ -21,11 +21,6 @@
   let silenceTimer = null;
   let hasSpeech    = false;
   let currentUtt   = null;
-  // interrupt listener state (runs while Layla is speaking)
-  let intStream    = null;
-  let intCtx       = null;
-  let intRaf       = null;
-  let intVoiceAt   = null;
 
   // ─── CSS ──────────────────────────────────────────────────────────────────────
   function injectStyles() {
@@ -675,69 +670,9 @@
     while (box.children.length > 5) box.removeChild(box.firstChild);
   }
 
-  // ── Interrupt listener — monitors mic while Layla is speaking ────────────────
-  // Uses a higher RMS threshold + 350ms sustain to avoid false triggers from
-  // speaker bleed. Echo cancellation is requested to help on mobile.
-  const INTERRUPT_THRESHOLD = 22;
-  const INTERRUPT_SUSTAIN   = 350;  // ms of continuous voice to trigger
-
-  async function startInterruptListener() {
-    if (intStream || !navigator.mediaDevices) return;
-    try {
-      intStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true },
-      });
-      const AC = /** @type {any} */ (window).AudioContext || /** @type {any} */ (window).webkitAudioContext;
-      intCtx      = new AC();
-      const iAnal = intCtx.createAnalyser();
-      iAnal.fftSize = 256;
-      intCtx.createMediaStreamSource(intStream).connect(iAnal);
-      const buf = new Uint8Array(iAnal.frequencyBinCount);
-      intVoiceAt  = null;
-
-      function check() {
-        // Stop if Layla is no longer speaking
-        if (voiceState !== 'speaking' || mode !== 'voice') {
-          stopInterruptListener();
-          return;
-        }
-        iAnal.getByteFrequencyData(buf);
-        let sum = 0;
-        for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-        const rms = Math.sqrt(sum / buf.length);
-
-        if (rms > INTERRUPT_THRESHOLD) {
-          if (!intVoiceAt) intVoiceAt = Date.now();
-          else if (Date.now() - intVoiceAt >= INTERRUPT_SUSTAIN) {
-            // User is talking — interrupt Layla
-            stopInterruptListener();
-            stopSpeaking();
-            setVoiceUI('listening');
-            startListening();
-            return;
-          }
-        } else {
-          intVoiceAt = null;
-        }
-        intRaf = requestAnimationFrame(check);
-      }
-      intRaf = requestAnimationFrame(check);
-    } catch (_) {
-      // Mic permission denied or unavailable — interruption not supported
-    }
-  }
-
-  function stopInterruptListener() {
-    if (intRaf)    { cancelAnimationFrame(intRaf); intRaf = null; }
-    if (intStream) { intStream.getTracks().forEach(t => t.stop()); intStream = null; }
-    if (intCtx)    { try { intCtx.close(); } catch (_) {} intCtx = null; }
-    intVoiceAt = null;
-  }
-
   // TTS — speak text, then automatically open mic
   function laylaSpeak(text) {
     stopSpeaking();
-    stopInterruptListener();
     setVoiceUI('speaking');
 
     if (!window.speechSynthesis) {
@@ -755,17 +690,11 @@
                 || voices.find(v => v.lang.startsWith('en'));
     if (best) utt.voice = best;
 
-    utt.onstart = () => {
-      // Begin monitoring for user interruption as soon as Layla starts speaking
-      startInterruptListener();
-    };
     utt.onend = () => {
-      stopInterruptListener();
       currentUtt = null;
       if (mode === 'voice') startListening();
     };
     utt.onerror = () => {
-      stopInterruptListener();
       currentUtt = null;
       if (mode === 'voice') startListening();
     };
@@ -775,7 +704,6 @@
   }
 
   function stopSpeaking() {
-    stopInterruptListener();
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     currentUtt = null;
   }
