@@ -32,7 +32,7 @@ Step 2 - UNDERSTAND THE NEED: Ask what brings them in today.
 
 Step 3 - COLLECT PATIENT INFORMATION (one field per turn):
 1. Full name
-2. Phone number (confirm by repeating it back)
+2. The patient's own personal mobile or phone number (this is NOT the clinic number — ask: "What is the best number to reach you on?"). Once they give it, repeat it back digit by digit to confirm.
 3. Preferred appointment date
 4. Service or reason for visit
 5. New or returning patient?

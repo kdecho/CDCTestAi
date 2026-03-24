@@ -859,17 +859,26 @@
 
       if (booking) {
         onBooking(booking, messages.slice());
+        // Force a clear closing message regardless of what the AI said,
+        // then automatically end the call once Layla finishes speaking.
+        const closing = "Perfect! Your appointment request has been sent to our team at Cedars Dental Centre. Someone will call you back shortly to confirm your booking. Thank you for calling, and have a wonderful day!";
+        vtAppend('Layla', closing);
+        setVoiceUI('speaking');
+        stopMic();
+        laylaSpeak(closing);
+        if (currentUtt) {
+          currentUtt.onend = () => {
+            currentUtt = null;
+            setTimeout(() => endVoice(true), 800);
+          };
+        } else {
+          setTimeout(() => endVoice(true), 800);
+        }
+        return; // skip normal reply handling
       }
 
       if (reply) {
-        // After booking confirmation, speak then go idle (don't re-listen forever)
-        if (booking) {
-          laylaSpeak(reply);
-          const utt = currentUtt;
-          if (utt) utt.onend = () => { currentUtt = null; setVoiceUI('idle'); };
-        } else {
-          laylaSpeak(reply);
-        }
+        laylaSpeak(reply);
       } else if (mode === 'voice') {
         startListening();
       }
@@ -899,11 +908,39 @@
     }
   }
 
-  function endVoice() {
+  function endVoice(confirmed) {
     stopVoiceAll(true);
-    document.getElementById('lc-voice').classList.remove('active');
+    const voiceEl = document.getElementById('lc-voice');
+    voiceEl.classList.remove('active');
     document.getElementById('lc-vt').innerHTML = '';
-    document.getElementById('lc-mode').style.display = 'flex';
+
+    if (confirmed) {
+      // Show a brief confirmation screen before going back to mode picker
+      const msgs = document.getElementById('lc-msgs');
+      voiceEl.style.display = 'none';
+      const modeEl = document.getElementById('lc-mode');
+      modeEl.innerHTML = `
+        <div style="width:64px;height:64px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:32px;">✅</div>
+        <h3 style="margin:0;font-size:16px;font-weight:700;color:#065f46;text-align:center;">Appointment Request Sent!</h3>
+        <p style="margin:0;font-size:14px;color:#047857;text-align:center;line-height:1.5;">Our team at Cedars Dental Centre will call you back shortly to confirm your booking.</p>
+        <button id="lc-new-convo" style="margin-top:8px;padding:12px 28px;background:#0d9488;color:#fff;border:none;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Start New Conversation</button>
+      `;
+      modeEl.style.display = 'flex';
+      document.getElementById('lc-new-convo').addEventListener('click', () => {
+        modeEl.innerHTML = `
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--lc-teal-lt);display:flex;align-items:center;justify-content:center;font-size:28px;">🦷</div>
+          <h3>Hi! How would you like to talk to Layla?</h3>
+          <p>Virtual receptionist at Cedars Dental Centre</p>
+          <div class="lc-mode-row">
+            <button class="lc-mode-btn" id="lc-pick-chat"><div class="lc-mode-icon chat">💬</div><span class="lc-mode-label">Chat</span><span class="lc-mode-desc">Type to ask questions or book an appointment</span></button>
+            <button class="lc-mode-btn" id="lc-pick-voice"><div class="lc-mode-icon voice">🎤</div><span class="lc-mode-label">Voice</span><span class="lc-mode-desc">Speak hands-free like a real phone call</span></button>
+          </div>`;
+        document.getElementById('lc-pick-chat').addEventListener('click', () => startChat());
+        document.getElementById('lc-pick-voice').addEventListener('click', () => startVoice());
+      });
+    } else {
+      document.getElementById('lc-mode').style.display = 'flex';
+    }
   }
 
   // ─── Init ─────────────────────────────────────────────────────────────────────
