@@ -432,6 +432,27 @@
       window.speechSynthesis.getVoices();
       window.speechSynthesis.addEventListener('voiceschanged', () => window.speechSynthesis.getVoices());
     }
+
+    // ── Fix: mobile keyboard pushes panel up ──────────────────────────────────
+    // visualViewport fires when the keyboard appears/disappears.
+    // We pin the panel to the top of the visible area instead of the page.
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', onViewportResize);
+      window.visualViewport.addEventListener('scroll', onViewportResize);
+    }
+  }
+
+  function onViewportResize() {
+    if (!isOpen || window.innerWidth > 540) return;
+    const panel = document.getElementById('lc-panel');
+    if (!panel) return;
+    const vv = window.visualViewport;
+    // Pin panel to the actual visible viewport
+    panel.style.setProperty('height', vv.height + 'px', 'important');
+    panel.style.setProperty('bottom', '0px', 'important');
+    // Scroll messages to bottom after keyboard opens
+    const msgs = document.getElementById('lc-msgs');
+    if (msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
   }
 
   // ─── Panel ────────────────────────────────────────────────────────────────────
@@ -595,6 +616,16 @@
     document.getElementById('lc-mode').style.display = 'none';
     document.getElementById('lc-voice').classList.add('active');
     setVoiceUI('thinking');
+
+    // iOS requires speechSynthesis to be triggered synchronously inside a
+    // user-gesture handler. We fire a silent utterance here (we ARE inside
+    // the click handler at this point) to unlock the audio session before
+    // the async greeting comes back.
+    if (window.speechSynthesis) {
+      const unlock = new SpeechSynthesisUtterance('');
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
     // Fetch greeting then speak it
     callAI([])
       .then(({ text, booking }) => {
@@ -687,7 +718,8 @@
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
 
       // Set up Web Audio VAD
-      audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+      const AudioCtx = /** @type {any} */ (window).AudioContext || /** @type {any} */ (window).webkitAudioContext;
+      audioCtx  = new AudioCtx();
       analyser  = audioCtx.createAnalyser();
       analyser.fftSize = 512;
       const src = audioCtx.createMediaStreamSource(stream);
